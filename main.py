@@ -4,9 +4,12 @@ from telegram import InputMediaPhoto
 import requests
 from telegram import InputMediaPhoto
 from io import BytesIO
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-TOKEN = "8151600770:AAE4TCfk9By5tex-L32ByOtl2XXnG3Pe9VE"
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 AUDIO_FILES = {
     "3 курс": {
