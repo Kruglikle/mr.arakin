@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
+METRICS_FILE = "metrics.txt"
 
 AUDIO_FILES = {
     "3 курс": {
@@ -560,6 +561,16 @@ AUDIO_FILES = {
 
 
 
+def log_user_click(user) -> None:
+    user_name = getattr(user, "full_name", None) or getattr(user, "username", None) or str(getattr(user, "id", "unknown"))
+
+    try:
+        with open(METRICS_FILE, "a", encoding="utf-8") as metrics_file:
+            metrics_file.write(f"{user_name}\n")
+    except OSError:
+        pass
+
+
 def start(update: Update, context: CallbackContext) -> None: #функция старт
     keyboard = [[InlineKeyboardButton(course, callback_data=course)] for course in AUDIO_FILES.keys()]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -568,6 +579,7 @@ def start(update: Update, context: CallbackContext) -> None: #функция с�
 def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
+    log_user_click(query.from_user)
     data = query.data
 
     if data in AUDIO_FILES:
