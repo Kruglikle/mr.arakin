@@ -5,6 +5,7 @@ import requests
 from telegram import InputMediaPhoto
 from io import BytesIO
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -561,12 +562,14 @@ AUDIO_FILES = {
 
 
 
-def log_user_click(user) -> None:
+def log_user_click(user, callback_data: str) -> None:
     user_name = getattr(user, "full_name", None) or getattr(user, "username", None) or str(getattr(user, "id", "unknown"))
+    button_label = callback_data.split("|")[-1] if isinstance(callback_data, str) and callback_data else "unknown"
 
     try:
         with open(METRICS_FILE, "a", encoding="utf-8") as metrics_file:
-            metrics_file.write(f"{user_name}\n")
+            click_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            metrics_file.write(f"{user_name} {click_timestamp} {button_label}\n")
     except OSError:
         pass
 
@@ -579,8 +582,8 @@ def start(update: Update, context: CallbackContext) -> None: #функция с�
 def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
-    log_user_click(query.from_user)
     data = query.data
+    log_user_click(query.from_user, data)
 
     if data in AUDIO_FILES:
         keyboard = [[InlineKeyboardButton(unit, callback_data=f"{data}|{unit}")] for unit in AUDIO_FILES[data].keys()]
